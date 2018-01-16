@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.itheima.crm.mapper.CustomerMapper">
+
+	<!-- 提取公共的查询where条件 -->
+	<sql id="select_customer_where">
+		<where>
+			<!--字符串拼接符号：
+				1.当参数传递的是java简单类型，花括号中的内容只能是：value
+				2.当参数传递的是pojo类型，花括号中的内容是pojo的属性  -->
+			<if test="custName != null and custName !=''">
+				c.cust_name LIKE '%${custName}%'
+			</if>
+			<if test="custSource != null and custSource !=''">
+				AND c.cust_source = #{custSource}
+			</if>
+			
+			<if test="custIndustry != null and custIndustry !=''">
+				AND c.cust_industry = #{custIndustry}
+			</if>
+			<if test="custLevel != null and custLevel !=''">
+				AND c.cust_level = #{custLevel}
+			</if>
+		</where>
+	<!-- 	WHERE
+		c.cust_name LIKE '%马%'
+		AND c.cust_source = '6'
+		AND c.cust_industry = '2'
+		AND c.cust_level = '22' -->
+	</sql>
+
+	<!-- 1.查询当前页客户列表数据 -->
+	<select id="queryCustomerList" parameterType="queryVo" resultType="customer">
+		SELECT
+		c.cust_id,
+		c.cust_name,
+		t1.dict_item_name cust_source,
+		t2.dict_item_name
+		cust_industry,
+		t3.dict_item_name cust_level,
+		c.cust_phone,
+		c.cust_mobile
+		FROM
+		customer c
+		LEFT JOIN base_dict t1 ON c.cust_source = t1.dict_id
+		LEFT JOIN base_dict t2 ON c.cust_industry = t2.dict_id
+		LEFT JOIN base_dict t3 ON c.cust_level = t3.dict_id
+	
+		<include refid="select_customer_where"></include>
+<!-- 		WHERE
+		c.cust_name LIKE '%马%'
+		AND c.cust_source = '6'
+		AND c.cust_industry = '2'
+		AND c.cust_level = '22' -->
+	
+		LIMIT #{start}, #{rows}
+	</select>
+	
+	<!-- 2.统计符合条件的客户数量 -->
+	<select id="countUsers" parameterType="queryVo" resultType="int">
+		SELECT
+		count(1)
+		FROM
+		customer c
+		
+		<include refid="select_customer_where"></include>
+		<!-- WHERE
+		c.cust_name LIKE '%马%'
+		AND c.cust_source = '6'
+		AND c.cust_industry = '2'
+		AND c.cust_level = '22' -->
+	</select>
+	
+	<!-- 3. 根据客户id查询客户数据 -->
+	<select id="queryCustomerById" parameterType="long" resultType="customer">
+		select * from customer where cust_id = #{custId}
+	</select>
+	
+	<!-- 4. 根据客户id修改客户信息 -->
+	<update id="updateCustomerById" parameterType="customer">
+		update customer c 
+		<set>
+			<if test="cust_name != null and cust_name != ''">
+			c.cust_name = #{cust_name},
+			</if>
+			<if test="cust_source != null and cust_source != ''">
+			c.cust_source = #{cust_source},
+			</if>
+			<if test="cust_industry != null and cust_industry != ''">
+			c.cust_industry = #{cust_industry},
+			</if>
+			<if test="cust_level != null and cust_level != ''">
+			c.cust_level = #{cust_level},
+			</if>
+			<if test="cust_linkman != null and cust_linkman != ''">
+			c.cust_linkman = #{cust_linkman},
+			</if>
+			<if test="cust_phone != null and cust_phone != ''">
+			c.cust_phone = #{cust_phone},
+			</if>
+			<if test="cust_mobile != null and cust_mobile != ''">
+			c.cust_mobile = #{cust_mobile},
+			</if>
+			<if test="cust_zipcode != null and cust_zipcode != ''">
+			c.cust_zipcode = #{cust_zipcode},
+			</if>
+			<if test="cust_address != null and cust_address != ''">
+			c.cust_address = #{cust_address}
+			</if>
+		</set>
+		<where>
+			c.cust_id = #{cust_id}
+		</where>
+	</update>
+
+	<!-- 5. 根据客户id删除客户 -->
+	<delete id="delCustomerById" parameterType="long">
+		delete  from customer where cust_id = #{custId}
+	</delete>
+</mapper>
